@@ -4,28 +4,106 @@
 
 @inject Nop.Services.Html.IHtmlFormatter htmlFormatter
 
-@{
-    Layout = "_ColumnsOne";
-
-    //title
-    NopHtml.AddTitleParts(Model.ProductName);
-    NopHtml.AddTitleParts(T("PageTitle.ProductReviews").Text);
-    //page class
-    NopHtml.AppendPageCssClassParts("html-product-reviews-page");
-}
 <div class="page product-reviews-page">
-    <div class="page-title">
-        <h1>@T("Reviews.ProductReviewsFor") <a href="@(Url.RouteUrl<Product>(new { SeName = Model.ProductSeName }))">@Model.ProductName</a></h1>
-    </div>
     <div class="page-body">
         @await Component.InvokeAsync(typeof(WidgetViewComponent), new { widgetZone = PublicWidgetZones.ProductReviewsPageTop, additionalData = Model })
-        @if (Model.AddProductReview.SuccessfullyAdded)
+        @if (Model.Items.Count > 0)
         {
-            <div class="result">
-                @Model.AddProductReview.Result
+            <div class="product-review-list">
+                <div class="title">
+                    <strong>@T("Reviews.ExistingReviews")</strong>
+                </div>
+                @foreach (var review in Model.Items)
+                {
+                    var ratingPercent = review.Rating * 20;
+                    <div class="product-review-item" itemprop="review" itemscope itemtype="https://schema.org/Review">
+                        <div class="review-item-head">
+                            <div class="review-title">
+                                <strong itemprop="name">@review.Title</strong>
+                            </div>
+                            <div class="product-review-box">
+                                <div class="rating" itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating">
+                                    <div style="width: @(ratingPercent)%" itemprop="ratingValue">
+                                        @review.Rating
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            <div class="review-text">
+                                @if (!string.IsNullOrEmpty(review.CustomerAvatarUrl))
+                                {
+                                    <div class="avatar">
+                                        @if (review.AllowViewingProfiles)
+                                        {
+                                            <a href="@Url.RouteUrl("CustomerProfile", new { id = review.CustomerId })" class="avatar-img-link">
+                                                <img src="@(review.CustomerAvatarUrl)" class="avatar-img" alt="Avatar" />
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <img src="@(review.CustomerAvatarUrl)" class="avatar-img" alt="Avatar" />
+                                        }
+                                    </div>
+                                }
+                                <div class="text-body" itemprop="reviewBody">
+                                    @Html.Raw(htmlFormatter.FormatText(review.ReviewText, false, true, false, false, false, false))
+                                </div>
+                            </div>
+                            @foreach (var reviewType in review.AdditionalProductReviewList.Where(x => x.Rating > 0 && x.VisibleToAllCustomers))
+                            {
+                                var ratingExtPercent = reviewType.Rating * 20;
+                                <div class="review-type-rating-ext">
+                                    <div class="review-title">
+                                        <i itemprop="name">@reviewType.Name</i>
+                                    </div>
+                                    <div class="product-review-box">
+                                        <div class="rating" itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating">
+                                            <div style="width: @(ratingExtPercent)%" itemprop="ratingValue">
+                                                @reviewType.Rating
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            <div class="review-info">
+                                <span class="user">
+                                    <label>@T("Reviews.From"):</label>
+                                    @if (review.AllowViewingProfiles)
+                                    {
+                                        <a href="@Url.RouteUrl("CustomerProfile", new { id = review.CustomerId })">@(review.CustomerName)</a>
+                                    }
+                                    else
+                                    {
+                                        <span itemprop="author">@review.CustomerName</span>
+                                    }
+                                </span>
+                                <span class="separator">|</span>
+                                <span class="date">
+                                    <label>@T("Reviews.Date"):</label>
+                                    <span itemprop="datePublished">@review.WrittenOnStr</span>
+                                </span>
+                            </div>
+                            @await Html.PartialAsync("_ProductReviewHelpfulness", review.Helpfulness)
+                            @await Component.InvokeAsync(typeof(WidgetViewComponent), new { widgetZone = PublicWidgetZones.ProductReviewsPageInsideReview, additionalData = review })
+                            @if (!string.IsNullOrEmpty(review.ReplyText))
+                            {
+                                <div class="reply">
+                                    <div class="reply-header">
+                                        @T("Reviews.Reply")
+                                    </div>
+                                    <div class="reply-text">
+                                        @Html.Raw(htmlFormatter.FormatText(review.ReplyText, false, true, false, false, false, false))
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
             </div>
         }
-        else if (!Model.AddProductReview.CanAddNewReview)
+
+        @if (!Model.AddProductReview.CanAddNewReview)
         {
             <div class="result review-already-added">
                 @T("Reviews.AlreadyAddedProductReviews")
@@ -37,7 +115,8 @@
                 <div class="title">
                     <strong>@T("Reviews.Write")</strong>
                 </div>
-                <form asp-route="ProductReviews" method="post">
+                <form asp-action="ProductReviews" method="post">
+                    <input type="hidden" asp-for="ProductId" />
                     <div asp-validation-summary="ModelOnly" class="message-error"></div>
                     <div class="fieldset">
                         <div class="form-fields">
@@ -111,102 +190,9 @@
                         </div>
                     </div>
                     <div class="buttons">
-                        <button type="submit" name="add-review" class="button-1 write-product-review-button">@T("Reviews.SubmitButton")</button>
+                        <button type="submit" name="add-review" id="add-review" class="button-1 write-product-review-button">@T("Reviews.SubmitButton")</button>
                     </div>
                 </form>
-            </div>
-        }
-        @if (Model.Items.Count > 0)
-        {
-            <div class="product-review-list">
-                <div class="title">
-                    <strong>@T("Reviews.ExistingReviews")</strong>
-                </div>
-                @foreach (var review in Model.Items)
-                {
-                    var ratingPercent = review.Rating * 20;
-                    <div class="product-review-item">
-                        <div class="review-item-head">
-                            <div class="review-title">
-                                <strong>@review.Title</strong>
-                            </div>
-                            <div class="product-review-box">
-                                <div class="rating">
-                                    <div style="width: @(ratingPercent)%">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="review-content">
-                            <div class="review-text">
-                                @if (!string.IsNullOrEmpty(review.CustomerAvatarUrl))
-                                {
-                                    <div class="avatar">
-                                        @if (review.AllowViewingProfiles)
-                                        {
-                                            <a href="@Url.RouteUrl("CustomerProfile", new { id = review.CustomerId })" class="avatar-img-link">
-                                                <img src="@(review.CustomerAvatarUrl)" class="avatar-img" alt="Avatar" />
-                                            </a>
-                                        }
-                                        else
-                                        {
-                                            <img src="@(review.CustomerAvatarUrl)" class="avatar-img" alt="Avatar" />
-                                        }
-                                    </div>
-                                }
-                                <div class="text-body">
-                                    @Html.Raw(htmlFormatter.FormatText(review.ReviewText, false, true, false, false, false, false))
-                                </div>
-                            </div>
-                            @foreach (var reviewType in review.AdditionalProductReviewList.Where(x => x.Rating > 0 && x.VisibleToAllCustomers))
-                            {
-                                var ratingExtPercent = reviewType.Rating * 20;
-                                <div class="review-type-rating-ext">
-                                    <div class="review-title">
-                                        <i>@reviewType.Name</i>
-                                    </div>
-                                    <div class="product-review-box">
-                                        <div class="rating">
-                                            <div style="width: @(ratingExtPercent)%">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                            <div class="review-info">
-                                <span class="user">
-                                    <label>@T("Reviews.From"):</label>
-                                    @if (review.AllowViewingProfiles)
-                                    {
-                                        <a href="@Url.RouteUrl("CustomerProfile", new { id = review.CustomerId })">@(review.CustomerName)</a>
-                                    }
-                                    else
-                                    {
-                                        <span>@review.CustomerName</span>
-                                    }
-                                </span>
-                                <span class="separator">|</span>
-                                <span class="date">
-                                    <label>@T("Reviews.Date"):</label>
-                                    <span>@review.WrittenOnStr</span>
-                                </span>
-                            </div>
-                            @await Html.PartialAsync("_ProductReviewHelpfulness", review.Helpfulness)
-                            @await Component.InvokeAsync(typeof(WidgetViewComponent), new { widgetZone = PublicWidgetZones.ProductReviewsPageInsideReview, additionalData = review })
-                            @if (!string.IsNullOrEmpty(review.ReplyText))
-                            {
-                                <div class="reply">
-                                    <div class="reply-header">
-                                        @T("Reviews.Reply")
-                                    </div>
-                                    <div class="reply-text">
-                                        @Html.Raw(htmlFormatter.FormatText(review.ReplyText, false, true, false, false, false, false))
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                }
             </div>
         }
         @await Component.InvokeAsync(typeof(WidgetViewComponent), new { widgetZone = PublicWidgetZones.ProductReviewsPageBottom, additionalData = Model })
