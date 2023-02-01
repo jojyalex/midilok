@@ -29,8 +29,6 @@ namespace Nop.Web.Models.Catalog
 
         public int ProductId { get; set; }
 
-        public string ProductSeName { get; set; }
-
         public IList<ProductReviewModel> Items { get; set; }
 
         public AddProductReviewModel AddProductReview { get; set; }

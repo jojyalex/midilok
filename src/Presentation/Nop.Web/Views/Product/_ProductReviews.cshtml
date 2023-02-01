@@ -10,6 +10,7 @@
         @if (Model.Items.Count > 0)
         {
             <div class="product-review-list">
+                <a name="productreviews"></a>
                 <div class="title">
                     <strong>@T("Reviews.ExistingReviews")</strong>
                 </div>
@@ -112,6 +113,7 @@
         else
         {
             <div class="write-review" id="review-form">
+                <a name="addreview"></a>
                 <div class="title">
                     <strong>@T("Reviews.Write")</strong>
                 </div>

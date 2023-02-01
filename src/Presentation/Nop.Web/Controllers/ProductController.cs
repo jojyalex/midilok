@@ -161,6 +161,7 @@ namespace Nop.Web.Controllers
 
         #region Product details page
 
+        [RestoreModelErrorsFromTempData]
         public virtual async Task<IActionResult> ProductDetails(int productId, int updatecartitemid = 0)
         {
             var product = await _productService.GetProductByIdAsync(productId);
@@ -365,6 +366,7 @@ namespace Nop.Web.Controllers
             return View(model);
         }
 
+        [SetTempDataModelErrors]
         [HttpPost, ActionName("ProductReviews")]
         [ValidateCaptcha]
         public virtual async Task<IActionResult> ProductReviewsAdd(int productId, ProductReviewsModel model, bool captchaValid)
@@ -449,7 +451,7 @@ namespace Nop.Web.Controllers
 
             var seName = await _urlRecordService.GetSeNameAsync(product);
             var productUrl = await _nopUrlHelper.RouteGenericUrlAsync<Product>(new { SeName = seName });
-            return LocalRedirectPermanent(productUrl);
+            return LocalRedirect(productUrl);
         }
 
         [HttpPost]
