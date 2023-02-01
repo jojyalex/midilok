@@ -1,6 +1,4 @@
-﻿using System;
-using System.Globalization;
-using FluentMigrator;
+﻿using FluentMigrator;
 
 namespace Nop.Data.Migrations
 {
@@ -9,25 +7,6 @@ namespace Nop.Data.Migrations
     /// </summary>
     public partial class NopMigrationAttribute : MigrationAttribute
     {
-        #region Utils
-
-        protected static long GetVersion(string dateTime)
-        {
-            return DateTime.ParseExact(dateTime, NopMigrationDefaults.DateFormats, CultureInfo.InvariantCulture).Ticks;
-        }
-
-        protected static long GetVersion(string dateTime, UpdateMigrationType migrationType)
-        {
-            return GetVersion(dateTime) + (int)migrationType;
-        }
-
-        protected static string GetDescription(string nopVersion, UpdateMigrationType migrationType)
-        {
-            return string.Format(NopMigrationDefaults.UpdateMigrationDescription, nopVersion, migrationType.ToString());
-        }
-
-        #endregion
-
         #region Ctor
 
         /// <summary>
@@ -36,9 +15,12 @@ namespace Nop.Data.Migrations
         /// <param name="dateTime">The migration date time string to convert on version</param>
         /// <param name="targetMigrationProcess">The target migration process</param>
         public NopMigrationAttribute(string dateTime, MigrationProcessType targetMigrationProcess = MigrationProcessType.NoMatter) :
-            base(GetVersion(dateTime), null)
+            this(new MigrationConfig
+            {
+                DateTime = dateTime,
+                TargetMigrationProcess = targetMigrationProcess
+            })
         {
-            TargetMigrationProcess = targetMigrationProcess;
         }
 
         /// <summary>
@@ -48,22 +30,40 @@ namespace Nop.Data.Migrations
         /// <param name="description">The migration description</param>
         /// <param name="targetMigrationProcess">The target migration process</param>
         public NopMigrationAttribute(string dateTime, string description, MigrationProcessType targetMigrationProcess = MigrationProcessType.NoMatter) :
-            base(GetVersion(dateTime), description)
+            this(new MigrationConfig
+            {
+                DateTime=dateTime,
+                Description = description,
+                TargetMigrationProcess = targetMigrationProcess
+            })
         {
-            TargetMigrationProcess = targetMigrationProcess;
         }
-
+        
         /// <summary>
         /// Initializes a new instance of the NopMigrationAttribute class
         /// </summary>
         /// <param name="dateTime">The migration date time string to convert on version</param>
         /// <param name="nopVersion">nopCommerce full version</param>
-        /// <param name="migrationType">The migration type</param>
+        /// <param name="updateMigrationType">The update migration type</param>
         /// <param name="targetMigrationProcess">The target migration process</param>
-        public NopMigrationAttribute(string dateTime, string nopVersion, UpdateMigrationType migrationType, MigrationProcessType targetMigrationProcess = MigrationProcessType.NoMatter) :
-            base(GetVersion(dateTime, migrationType), GetDescription(nopVersion, migrationType))
+        public NopMigrationAttribute(string dateTime, string nopVersion, UpdateMigrationType updateMigrationType, MigrationProcessType targetMigrationProcess = MigrationProcessType.NoMatter) :
+            this(new MigrationConfig
+            {
+                DateTime = dateTime,
+                NopVersion = nopVersion,
+                UpdateMigrationType = updateMigrationType,
+                TargetMigrationProcess = targetMigrationProcess,
+            })
         {
-            TargetMigrationProcess = targetMigrationProcess;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the NopMigrationAttribute class
+        /// </summary>
+        /// <param name="config">The migration configuration data</param>
+        public NopMigrationAttribute(MigrationConfig config) : base(config.Version, config.Description)
+        {
+            MigrationConfig = config;
         }
 
         #endregion
@@ -73,7 +73,9 @@ namespace Nop.Data.Migrations
         /// <summary>
         /// Target migration process
         /// </summary>
-        public MigrationProcessType TargetMigrationProcess { get; set; }
+        public MigrationConfig MigrationConfig { get; set; }
+
+        public virtual MigrationProcessType TargetMigrationProcess => MigrationConfig.TargetMigrationProcess;
 
         #endregion
     }
