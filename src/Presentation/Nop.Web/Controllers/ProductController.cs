@@ -161,7 +161,6 @@ namespace Nop.Web.Controllers
 
         #region Product details page
 
-        [RestoreModelErrorsFromTempData]
         public virtual async Task<IActionResult> ProductDetails(int productId, int updatecartitemid = 0)
         {
             var product = await _productService.GetProductByIdAsync(productId);
@@ -366,7 +365,6 @@ namespace Nop.Web.Controllers
             return View(model);
         }
 
-        [SetTempDataModelErrors]
         [HttpPost, ActionName("ProductReviews")]
         [ValidateCaptcha]
         public virtual async Task<IActionResult> ProductReviewsAdd(int productId, ProductReviewsModel model, bool captchaValid)
@@ -447,11 +445,21 @@ namespace Nop.Web.Controllers
                     _notificationService.SuccessNotification(await _localizationService.GetResourceAsync("Reviews.SeeAfterApproving"));
                 else
                     _notificationService.SuccessNotification(await _localizationService.GetResourceAsync("Reviews.SuccessfullyAdded"));
+
+                var seName = await _urlRecordService.GetSeNameAsync(product);
+                var productUrl = await _nopUrlHelper.RouteGenericUrlAsync<Product>(new { SeName = seName });
+                return LocalRedirect(productUrl);
             }
 
-            var seName = await _urlRecordService.GetSeNameAsync(product);
-            var productUrl = await _nopUrlHelper.RouteGenericUrlAsync<Product>(new { SeName = seName });
-            return LocalRedirect(productUrl);
+            //If we got this far, something failed, redisplay form
+            RouteData.Values["action"] = "ProductDetails";
+
+            //model
+            var productModel = await _productModelFactory.PrepareProductDetailsModelAsync(product);
+            //template
+            var productTemplateViewPath = await _productModelFactory.PrepareProductTemplateViewPathAsync(product);
+
+            return View(productTemplateViewPath, productModel);
         }
 
         [HttpPost]
