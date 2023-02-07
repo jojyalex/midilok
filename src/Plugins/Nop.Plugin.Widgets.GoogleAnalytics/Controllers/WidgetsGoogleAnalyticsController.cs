@@ -59,6 +59,7 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics.Controllers
             var model = new ConfigurationModel
             {
                 GoogleId = googleAnalyticsSettings.GoogleId,
+                ApiSecret = googleAnalyticsSettings.ApiSecret,
                 TrackingScript = googleAnalyticsSettings.TrackingScript,
                 EnableEcommerce = googleAnalyticsSettings.EnableEcommerce,
                 UseJsToSendEcommerceInfo = googleAnalyticsSettings.UseJsToSendEcommerceInfo,
@@ -70,6 +71,7 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics.Controllers
             if (storeScope > 0)
             {
                 model.GoogleId_OverrideForStore = await _settingService.SettingExistsAsync(googleAnalyticsSettings, x => x.GoogleId, storeScope);
+                model.ApiSecret_OverrideForStore = await _settingService.SettingExistsAsync(googleAnalyticsSettings, x => x.ApiSecret, storeScope);
                 model.TrackingScript_OverrideForStore = await _settingService.SettingExistsAsync(googleAnalyticsSettings, x => x.TrackingScript, storeScope);
                 model.EnableEcommerce_OverrideForStore = await _settingService.SettingExistsAsync(googleAnalyticsSettings, x => x.EnableEcommerce, storeScope);
                 model.UseJsToSendEcommerceInfo_OverrideForStore = await _settingService.SettingExistsAsync(googleAnalyticsSettings, x => x.UseJsToSendEcommerceInfo, storeScope);
@@ -91,6 +93,7 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics.Controllers
             var googleAnalyticsSettings = await _settingService.LoadSettingAsync<GoogleAnalyticsSettings>(storeScope);
 
             googleAnalyticsSettings.GoogleId = model.GoogleId;
+            googleAnalyticsSettings.ApiSecret = model.ApiSecret;
             googleAnalyticsSettings.TrackingScript = model.TrackingScript;
             googleAnalyticsSettings.EnableEcommerce = model.EnableEcommerce;
             googleAnalyticsSettings.UseJsToSendEcommerceInfo = model.UseJsToSendEcommerceInfo;
@@ -101,6 +104,7 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics.Controllers
              * This behavior can increase performance because cached settings will not be cleared 
              * and loaded from database after each update */
             await _settingService.SaveSettingOverridablePerStoreAsync(googleAnalyticsSettings, x => x.GoogleId, model.GoogleId_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(googleAnalyticsSettings, x => x.ApiSecret, model.ApiSecret_OverrideForStore, storeScope, false);
             await _settingService.SaveSettingOverridablePerStoreAsync(googleAnalyticsSettings, x => x.TrackingScript, model.TrackingScript_OverrideForStore, storeScope, false);
             await _settingService.SaveSettingOverridablePerStoreAsync(googleAnalyticsSettings, x => x.EnableEcommerce, model.EnableEcommerce_OverrideForStore, storeScope, false);
             await _settingService.SaveSettingOverridablePerStoreAsync(googleAnalyticsSettings, x => x.UseJsToSendEcommerceInfo, model.UseJsToSendEcommerceInfo_OverrideForStore, storeScope, false);

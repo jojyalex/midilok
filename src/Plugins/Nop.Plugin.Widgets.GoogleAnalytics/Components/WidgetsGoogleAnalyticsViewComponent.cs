@@ -119,7 +119,6 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics.Components
 
                 var analyticsEcommerceScript = @"gtag('event', 'purchase', {
                     'transaction_id': '{ORDERID}',
-                    'affiliation': '{SITE}',
                     'value': {TOTAL},
                     'currency': '{CURRENCY}',
                     'tax': {TAX},
@@ -128,8 +127,7 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics.Components
                     {DETAILS}
                     ]
                 });";
-                analyticsEcommerceScript = analyticsEcommerceScript.Replace("{ORDERID}", FixIllegalJavaScriptChars(order.CustomOrderNumber));
-                analyticsEcommerceScript = analyticsEcommerceScript.Replace("{SITE}", FixIllegalJavaScriptChars(store.Name));
+                analyticsEcommerceScript = analyticsEcommerceScript.Replace("{ORDERID}", FixIllegalJavaScriptChars(order.CustomOrderNumber));                
                 analyticsEcommerceScript = analyticsEcommerceScript.Replace("{TOTAL}", order.OrderTotal.ToString("0.00", usCulture));
                 var currencyCode = (await _currencyService.GetCurrencyByIdAsync(_currencySettings.PrimaryStoreCurrencyId)).CurrencyCode;
                 analyticsEcommerceScript = analyticsEcommerceScript.Replace("{CURRENCY}", currencyCode);
@@ -145,10 +143,11 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics.Components
                         sb.AppendLine(",");
 
                     var analyticsEcommerceDetailScript = @"{
-                    'id': '{PRODUCTSKU}',
-                    'name': '{PRODUCTNAME}',
-                    'category': '{CATEGORYNAME}',
-                    'list_position': {LISTPOSITION},
+                    'item_id': '{PRODUCTSKU}',
+                    'item_name': '{PRODUCTNAME}',
+                    'affiliation': '{SITE}',
+                    'item_category': '{CATEGORYNAME}',
+                    'index': {LISTPOSITION},
                     'quantity': {QUANTITY},
                     'price': '{UNITPRICE}'
                     }
@@ -163,6 +162,7 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics.Components
 
                     analyticsEcommerceDetailScript = analyticsEcommerceDetailScript.Replace("{PRODUCTSKU}", FixIllegalJavaScriptChars(sku));
                     analyticsEcommerceDetailScript = analyticsEcommerceDetailScript.Replace("{PRODUCTNAME}", FixIllegalJavaScriptChars(product.Name));
+                    analyticsEcommerceDetailScript = analyticsEcommerceDetailScript.Replace("{SITE}", FixIllegalJavaScriptChars(store.Name));
                     var category = (await _categoryService.GetCategoryByIdAsync((await _categoryService.GetProductCategoriesByProductIdAsync(item.ProductId)).FirstOrDefault()?.CategoryId ?? 0))?.Name;
                     analyticsEcommerceDetailScript = analyticsEcommerceDetailScript.Replace("{CATEGORYNAME}", FixIllegalJavaScriptChars(category));
                     analyticsEcommerceDetailScript = analyticsEcommerceDetailScript.Replace("{LISTPOSITION}", listingPosition.ToString());

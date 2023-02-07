@@ -11,6 +11,10 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics.Models
         public string GoogleId { get; set; }
         public bool GoogleId_OverrideForStore { get; set; }
 
+        [NopResourceDisplayName("Plugins.Widgets.GoogleAnalytics.ApiSecret")]
+        public string ApiSecret { get; set; }
+        public bool ApiSecret_OverrideForStore { get; set; }
+
         [NopResourceDisplayName("Plugins.Widgets.GoogleAnalytics.EnableEcommerce")]
         public bool EnableEcommerce { get; set; }
         public bool EnableEcommerce_OverrideForStore { get; set; }
