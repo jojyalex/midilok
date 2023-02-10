@@ -30,7 +30,7 @@
                         <nop-label asp-for="ApiSecret" />
                     </div>
                     <div class="col-md-9">
-                        <nop-editor asp-for="ApiSecret" />
+                        <nop-editor asp-for="ApiSecret" html-attributes="@(new { value = Model.ApiSecret })" />
                         <span asp-validation-for="ApiSecret"></span>
                     </div>
                 </div>
