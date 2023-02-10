@@ -62,6 +62,7 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics.Controllers
                 ApiSecret = googleAnalyticsSettings.ApiSecret,
                 TrackingScript = googleAnalyticsSettings.TrackingScript,
                 EnableEcommerce = googleAnalyticsSettings.EnableEcommerce,
+                UseSandbox = googleAnalyticsSettings.UseSandbox,
                 UseJsToSendEcommerceInfo = googleAnalyticsSettings.UseJsToSendEcommerceInfo,
                 IncludingTax = googleAnalyticsSettings.IncludingTax,
                 IncludeCustomerId = googleAnalyticsSettings.IncludeCustomerId,
@@ -74,6 +75,7 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics.Controllers
                 model.ApiSecret_OverrideForStore = await _settingService.SettingExistsAsync(googleAnalyticsSettings, x => x.ApiSecret, storeScope);
                 model.TrackingScript_OverrideForStore = await _settingService.SettingExistsAsync(googleAnalyticsSettings, x => x.TrackingScript, storeScope);
                 model.EnableEcommerce_OverrideForStore = await _settingService.SettingExistsAsync(googleAnalyticsSettings, x => x.EnableEcommerce, storeScope);
+                model.UseSandbox_OverrideForStore = await _settingService.SettingExistsAsync(googleAnalyticsSettings, x => x.UseSandbox, storeScope);
                 model.UseJsToSendEcommerceInfo_OverrideForStore = await _settingService.SettingExistsAsync(googleAnalyticsSettings, x => x.UseJsToSendEcommerceInfo, storeScope);
                 model.IncludingTax_OverrideForStore = await _settingService.SettingExistsAsync(googleAnalyticsSettings, x => x.IncludingTax, storeScope);
                 model.IncludeCustomerId_OverrideForStore = await _settingService.SettingExistsAsync(googleAnalyticsSettings, x => x.IncludeCustomerId, storeScope);
@@ -96,6 +98,7 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics.Controllers
             googleAnalyticsSettings.ApiSecret = model.ApiSecret;
             googleAnalyticsSettings.TrackingScript = model.TrackingScript;
             googleAnalyticsSettings.EnableEcommerce = model.EnableEcommerce;
+            googleAnalyticsSettings.UseSandbox= model.UseSandbox;
             googleAnalyticsSettings.UseJsToSendEcommerceInfo = model.UseJsToSendEcommerceInfo;
             googleAnalyticsSettings.IncludingTax = model.IncludingTax;
             googleAnalyticsSettings.IncludeCustomerId = model.IncludeCustomerId;
@@ -107,6 +110,7 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics.Controllers
             await _settingService.SaveSettingOverridablePerStoreAsync(googleAnalyticsSettings, x => x.ApiSecret, model.ApiSecret_OverrideForStore, storeScope, false);
             await _settingService.SaveSettingOverridablePerStoreAsync(googleAnalyticsSettings, x => x.TrackingScript, model.TrackingScript_OverrideForStore, storeScope, false);
             await _settingService.SaveSettingOverridablePerStoreAsync(googleAnalyticsSettings, x => x.EnableEcommerce, model.EnableEcommerce_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(googleAnalyticsSettings, x => x.UseSandbox, model.UseSandbox_OverrideForStore, storeScope, false);
             await _settingService.SaveSettingOverridablePerStoreAsync(googleAnalyticsSettings, x => x.UseJsToSendEcommerceInfo, model.UseJsToSendEcommerceInfo_OverrideForStore, storeScope, false);
             await _settingService.SaveSettingOverridablePerStoreAsync(googleAnalyticsSettings, x => x.IncludingTax, model.IncludingTax_OverrideForStore, storeScope, false);
             await _settingService.SaveSettingOverridablePerStoreAsync(googleAnalyticsSettings, x => x.IncludeCustomerId, model.IncludeCustomerId_OverrideForStore, storeScope, false);

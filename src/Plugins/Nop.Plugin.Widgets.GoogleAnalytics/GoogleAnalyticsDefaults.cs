@@ -34,5 +34,11 @@
         /// Gets a name of the cookies "client_id"
         /// </summary>
         public static string ClientIdCookiesName => "_ga";
+
+        /// <summary>
+        /// Gets a key of the attribute to store client_id
+        /// </summary>
+        public static string ClientIdAttribute => "GoogleAnalytics.ClientId";
+
     }
 }

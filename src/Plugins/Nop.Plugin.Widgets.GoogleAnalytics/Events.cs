@@ -12,6 +12,7 @@ using Nop.Plugin.Widgets.GoogleAnalytics.Api;
 using Nop.Plugin.Widgets.GoogleAnalytics.Api.Models;
 using Nop.Services.Catalog;
 using Nop.Services.Cms;
+using Nop.Services.Common;
 using Nop.Services.Configuration;
 using Nop.Services.Directory;
 using Nop.Services.Events;
@@ -22,6 +23,7 @@ using Nop.Services.Stores;
 namespace Nop.Plugin.Widgets.GoogleAnalytics
 {
     public class EventConsumer :
+        IConsumer<OrderPlacedEvent>,
         IConsumer<OrderPaidEvent>,
         IConsumer<OrderRefundedEvent>
     {
@@ -29,6 +31,7 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics
         private readonly GoogleAnalyticsHttpClient _googleAnalyticsHttpClient;
         private readonly ICategoryService _categoryService;
         private readonly ICurrencyService _currencyService;
+        private readonly IGenericAttributeService _genericAttributeService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger _logger;
         private readonly IOrderService _orderService;
@@ -43,6 +46,7 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics
             GoogleAnalyticsHttpClient googleAnalyticsHttpClient,
             ICategoryService categoryService,
             ICurrencyService currencyService,
+            IGenericAttributeService genericAttributeService,
             IHttpContextAccessor httpContextAccessor,
             ILogger logger,
             IOrderService orderService,
@@ -56,6 +60,7 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics
             _googleAnalyticsHttpClient = googleAnalyticsHttpClient;
             _categoryService = categoryService;
             _currencyService = currencyService;
+            _genericAttributeService = genericAttributeService;
             _httpContextAccessor = httpContextAccessor;
             _logger = logger;
             _orderService = orderService;
@@ -73,26 +78,20 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics
         }
 
         /// <returns>A task that represents the asynchronous operation</returns>
-        private async Task ProcessOrderEventAsync(Order order, string eventName)
+        private async Task ProcessOrderEventAsync(Order order, GoogleAnalyticsSettings googleAnalyticsSettings, string eventName)
         {
             try
             {
-                //settings per store
                 var store = await _storeService.GetStoreByIdAsync(order.StoreId) ?? await _storeContext.GetCurrentStoreAsync();
-                var googleAnalyticsSettings = await _settingService.LoadSettingAsync<GoogleAnalyticsSettings>(store.Id);
                 var currency = (await _currencyService.GetCurrencyByIdAsync(_currencySettings.PrimaryStoreCurrencyId)).CurrencyCode;
                 var orderId = order.CustomOrderNumber;
                 var orderShipping = googleAnalyticsSettings.IncludingTax ? order.OrderShippingInclTax : order.OrderShippingExclTax;
                 var orderTax = order.OrderTax;
                 var orderTotal = order.OrderTotal;
 
-                //try to get cookie
-                var httpContext = _httpContextAccessor.HttpContext;
-                httpContext.Request.Cookies.TryGetValue(GoogleAnalyticsDefaults.ClientIdCookiesName, out var clientId);
-
                 var gaRequest = new EventRequest
                 {
-                    ClientId = clientId,
+                    ClientId = await _genericAttributeService.GetAttributeAsync<string>(order, GoogleAnalyticsDefaults.ClientIdAttribute, store.Id),
                     UserId = order.CustomerId.ToString(),
                     TimestampMicros = (DateTimeOffset.UtcNow - new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero)).Ticks / 10
                 };
@@ -110,11 +109,11 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics
                     Currency = currency,
                     TransactionId = orderId,
                     Value = orderTotal,
+                    Tax = orderTax,
                     Shipping = orderShipping
                 };
 
                 var items = new List<Item>();
-
                 foreach (var item in await _orderService.GetOrderItemsAsync(order.Id))
                 {
                     var product = await _productService.GetProductByIdAsync(item.ProductId);
@@ -143,7 +142,7 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics
                 gaEvent.Params = gaParams;                
                 gaRequest.Events = events;
 
-                await _googleAnalyticsHttpClient.RequestAsync(gaRequest);
+                await _googleAnalyticsHttpClient.RequestAsync(gaRequest, googleAnalyticsSettings);
             }
             catch (Exception ex)
             {
@@ -186,7 +185,7 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics
             }
 
             if (sendRequest)
-                await ProcessOrderEventAsync(order, GoogleAnalyticsDefaults.OrderRefundedEventName);
+                await ProcessOrderEventAsync(order, googleAnalyticsSettings, GoogleAnalyticsDefaults.OrderRefundedEventName);
         }
 
         /// <summary>
@@ -214,7 +213,40 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics
             var sendRequest = !googleAnalyticsSettings.UseJsToSendEcommerceInfo;
 
             if (sendRequest)
-                await ProcessOrderEventAsync(order, GoogleAnalyticsDefaults.OrderPaidEventName);
+                await ProcessOrderEventAsync(order, googleAnalyticsSettings, GoogleAnalyticsDefaults.OrderPaidEventName);
+        }
+
+        /// <summary>
+        /// Handles the event
+        /// </summary>
+        /// <param name="eventMessage">The event message</param>
+        /// <returns>A task that represents the asynchronous operation</returns>
+        public async Task HandleEventAsync(OrderPlacedEvent eventMessage)
+        {
+            //ensure the plugin is installed and active
+            if (!await IsPluginEnabledAsync())
+                return;
+
+            var order = eventMessage.Order;
+
+            //settings per store
+            var store = await _storeService.GetStoreByIdAsync(order.StoreId) ?? await _storeContext.GetCurrentStoreAsync();
+            var googleAnalyticsSettings = await _settingService.LoadSettingAsync<GoogleAnalyticsSettings>(store.Id);
+
+            //ecommerce is disabled
+            if (!googleAnalyticsSettings.EnableEcommerce)
+                return;
+
+            //we use HTTP requests to notify GA about new orders (only when they are paid)
+            var sendRequest = !googleAnalyticsSettings.UseJsToSendEcommerceInfo;
+
+            if (sendRequest)
+            {
+                //try to get cookie
+                var httpContext = _httpContextAccessor.HttpContext;
+                httpContext.Request.Cookies.TryGetValue(GoogleAnalyticsDefaults.ClientIdCookiesName, out var clientId);
+                await _genericAttributeService.SaveAttributeAsync(order, GoogleAnalyticsDefaults.ClientIdAttribute, clientId, store.Id);
+            }
         }
     }
 }

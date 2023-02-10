@@ -36,6 +36,7 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics.Api.Models
         /// <summary>
         /// Gets the request method
         /// </summary>
+        [JsonIgnore]
         public string Method => HttpMethods.Post;
     }
 }

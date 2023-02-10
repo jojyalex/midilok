@@ -27,12 +27,6 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics.Api.Models
         public decimal Value { get; set; }
 
         /// <summary>
-        /// The coupon name/code associated with the event
-        /// </summary>
-        [JsonProperty("coupon")]
-        public string Coupon { get; set; }
-
-        /// <summary>
         /// Shipping cost associated with a transaction
         /// </summary>
         [JsonProperty("shipping")]
@@ -42,7 +36,7 @@ namespace Nop.Plugin.Widgets.GoogleAnalytics.Api.Models
         /// Tax cost associated with a transaction
         /// </summary>
         [JsonProperty("tax")]
-        public string Tax { get; set; }
+        public decimal Tax { get; set; }
 
         /// <summary>
         /// The items for the event
