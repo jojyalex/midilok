@@ -1,0 +1,52 @@
+﻿.btn {
+  background-color: #1E90FF; /* dodgerblue	#1E90FF  steelblue	#4682B4  royalblue	#4169E1 */
+  border: none;
+  color: white;
+  padding: 7px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+.boxcash {
+  border: 3px solid black;
+  border-radius: 5px;
+  background-color: white;
+  padding: 5px;
+  margin: auto;
+  width: 30%;
+  height: 150px;
+  text-align: center;
+  border-style: hidden;
+  box-shadow: 2px 2px 10px #888888;
+}
+
+.alternatebox {
+  box-sizing: border-box;
+}
+
+.btn-primary {
+  background-color: #1E90FF;
+  color: white;
+  border-radius: 3px;
+}
+
+  .btn-primary:hover {
+    background-color: #4169E1;
+    color: white;
+    border-radius: 3px;
+  }
+
+#content_main2_left {
+  float: left;
+  width: 300px;
+  height: 240px;
+  margin-top: -40px;
+  -webkit-border-radius: 15px;
+  -moz-border-radius: 15px;
+  border-radius: 15px;
+  background: #817339;
+}

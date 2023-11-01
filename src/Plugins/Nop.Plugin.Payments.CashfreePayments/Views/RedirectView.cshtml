@@ -1,0 +1,65 @@
+﻿@model Nop.Plugin.Payments.CashfreePayments.Models.ResponseModel
+
+@inject Nop.Plugin.Payments.CashfreePayments.CashfreePaymentSettings cashfreepaymentsettings
+
+@{
+    Layout = "_Root.Head";
+
+    //title
+    NopHtml.AddTitleParts(T("ConfirmRedirection").Text);
+}
+
+<link rel="stylesheet" href="~/Plugins/Payments.CashfreePayments/Content/styles.css" />
+
+
+@if(Model.ActiveEnvt == 1) //1 == production
+    {
+    <script src="https://sdk.cashfree.com/js/ui/2.0.0/cashfree.prod.js"></script>
+    }
+else
+    {
+        <script src="https://sdk.cashfree.com/js/ui/2.0.0/cashfree.sandbox.js"></script>
+    }
+<script asp-location = "Footer" >
+    function render() {
+        let paymentSessionId = document.getElementById("paymentSessionId").value;
+        if (paymentSessionId == "") {
+            alert("No session_id specified");
+            return
+        };
+        const cf = new Cashfree(paymentSessionId);
+        cf.redirect();
+    };
+    function rendercancel() {
+        alert("cancel");
+        $.ajax({
+            cache: false,
+            type: "POST",
+            url: "@(Url.Action("CancelRedirect", "PaymentCashfree"))",
+            success : function(response) {
+
+            }
+           
+        });
+           
+        
+    };
+    </script>
+<div class="boxcash alternate">
+<div class="content_main2_left">
+        <img src="@Url.Content("~/Plugins/Payments.CashfreePayments/logo.jpg")" alt="" width="120" height="60">
+    </div>
+    <p>
+        Confirm Redirection
+        </p>
+
+    <input type="hidden"  placeholder="order_token" id="paymentSessionId" value=@Model.payment_session_id class="inputText">
+
+    <div class="form-group row">
+    <div class="col-md-9 offset-md-3">
+        <button type="submit" name="nextstep" class="btn btn-primary" onclick=render()>CONFIRM</button>
+    
+        @*<button type="submit" name="nextstep" class="btn btn-primary" onclick=rendercancel()>CANCEL</button>*@
+    </div>
+    </div>
+</div>
