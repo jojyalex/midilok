@@ -6,9 +6,6 @@ on:
   push:
     branches: 
       [ midilok-prod ]
-    paths:
-    - 'dsfsd/**'
-    - '.github/workflows/midilok-capp-web-AutoDeployTrigger-3785ffb0-fd28-4b7a-a596-2441298287d4.yml'
 
   # Allow manual trigger 
   workflow_dispatch:
@@ -29,7 +26,7 @@ jobs:
       - name: Build and push container image to registry
         uses: azure/container-apps-deploy-action@v1
         with:
-          appSourcePath: ${{ github.workspace }}dsfsd 
+          appSourcePath: ${{ github.workspace }} 
           registryUrl: midilokregistry.azurecr.io
           registryUsername: ${{ secrets.MIDILOKCAPPWEB_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.MIDILOKCAPPWEB_REGISTRY_PASSWORD }}
