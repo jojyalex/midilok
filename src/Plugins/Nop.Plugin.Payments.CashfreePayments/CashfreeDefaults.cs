@@ -48,6 +48,11 @@ namespace Nop.Plugin.Payments.CashfreePayments
         /// </summary>
         public static string ReturnUrlRoutename => "Plugin.Payments.CashfreePayments.HandleResponse";
 
+        /// <summary>
+        /// Gets the redirection route url
+        /// </summary>
+        public static string RedirectionUrlRoutename => "Plugin.Payments.CashfreePayments.Redirection";
+
 
 
         /// <summary>

@@ -29,6 +29,11 @@ namespace Nop.Plugin.Payments.CashfreePayments.Infrastructure
             endpointRouteBuilder.MapControllerRoute(CashfreeDefaults.ReturnUrlRoutename,
                 "Plugins/PaymentCashfree/HandleResponse",
                  new { controller = "PaymentCashfree", action = "HandleResponse" });
+            //return_url
+            endpointRouteBuilder.MapControllerRoute(CashfreeDefaults.RedirectionUrlRoutename,
+                "Plugins/PaymentCashfree/Redirection",
+                 new { controller = "PaymentCashfree", action = "Redirection" });
+
         }
 
         /// <summary>

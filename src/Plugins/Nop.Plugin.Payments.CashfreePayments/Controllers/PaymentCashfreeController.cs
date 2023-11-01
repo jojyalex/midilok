@@ -189,6 +189,7 @@ namespace Nop.Plugin.Payments.CashfreePayments.Controllers
                 new Uri("https://sandbox.cashfree.com/pg/orders/" + order_id) :
                new Uri("https://api.cashfree.com/pg/orders/" + order_id);
 
+            _cashfreePaymentSettings.ApiVersion = "2022-09-01";
             client.DefaultRequestHeaders.Add("x-api-version", _cashfreePaymentSettings.ApiVersion);
             client.DefaultRequestHeaders.Add("x-client-id", _cashfreePaymentSettings.AppID);
             client.DefaultRequestHeaders.Add("x-client-secret", _cashfreePaymentSettings.SecretKey);
