@@ -6,7 +6,7 @@ name: Build and deploy ASP.Net Core app to Azure Web App - midilok-prod
 on:
   push:
     branches:
-      - midilok-prod
+      - develop
   workflow_dispatch:
 
 jobs:
