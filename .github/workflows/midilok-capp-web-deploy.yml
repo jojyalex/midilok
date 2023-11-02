@@ -34,7 +34,6 @@ jobs:
           resourceGroup: midilok-prod
           imageToBuild: midilokregistry.azurecr.io/midilok-capp-web:${{ github.sha }}
           dockerfilePath: Dockerfile
-          targetPort: 443
 
      
 
